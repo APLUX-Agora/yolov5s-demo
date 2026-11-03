@@ -6,20 +6,23 @@ Targets: QCS6490, QCS8550, QCS8625, IQ8, IQ9. The default is FP16, except QCS649
 
 ## 1. Check the environment
 
-Download `agora.env.example` as `agora.env`, edit its two values if needed, then load it.
-Agora's workspace provides the same file with your selections filled in.
+Set these two variables in the device terminal. Choose any workspace path/name;
+Agora fills in the selected SoC. Use a separate workspace per task.
 
 ```bash
-curl -fL https://raw.githubusercontent.com/APLUX-Agora/yolov5s-demo/main/agora.env.example -o agora.env
-source ./agora.env
-mkdir -p "$AGORA_WORKSPACE"
+export AGORA_WORKSPACE="$HOME/my-yolo-demo"
+export AGORA_SOC='QCS8550'
+```
+
+```bash
+mkdir -p "$AGORA_WORKSPACE" &&
 curl -fL https://raw.githubusercontent.com/APLUX-Agora/yolov5s-demo/main/tools/check-environment.py \
-  -o "$AGORA_WORKSPACE/check-environment.py"
+  -o "$AGORA_WORKSPACE/check-environment.py" &&
 python3 "$AGORA_WORKSPACE/check-environment.py" --soc "$AGORA_SOC" --ubuntu 22.04
 ```
 
 QCS6490/QCS8550/QCS8625 use Ubuntu 22.04 in this demo; IQ8/IQ9 use Ubuntu 24.04.
-`CHECKED` means the expected value matches. Fix `FAILED` before proceeding.
+`CHECKED` means the expected value matches. Stop at `FAILED`: correct hardware/system selections or workspace/disk problems, then rerun the check.
 For `NEEDS_SETUP`, install the dependencies below and rerun the check.
 
 ## 2. Get the code
@@ -46,7 +49,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Keep this terminal open. In a new terminal, source your `agora.env` and activate
+Keep this terminal open. In a new terminal, set the same two variables from step 1 and activate
 `$AGORA_WORKSPACE/code/.venv` before continuing.
 
 ## 4. Get model resources
@@ -66,7 +69,21 @@ python examples/detect.py --models "$AGORA_WORKSPACE/resources/targets/$AGORA_SO
   --output "$AGORA_WORKSPACE/result.jpg"
 ```
 
-Expected: Inference timing, the detected object count, `COMPLETED`, and an annotated `result.jpg`. Use `--image` for another image or `--precision INT8` / `--precision W8A16` when the target supplies it.
+Expected: A loading message, inference timing, the detected object count, `COMPLETED`, and an annotated `result.jpg`.
+
+On a cloud device, switch to the remote desktop and open `result.jpg` in your workspace. Use `--image` for another image or `--precision INT8` / `--precision W8A16` when the target supplies it.
+
+### SDK diagnostics
+
+Normal output shows loading, results, and errors. Native SDK diagnostics are kept
+off the terminal. If troubleshooting requires them, add an optional private log:
+
+```bash
+python examples/detect.py --models "$AGORA_WORKSPACE/resources/targets/$AGORA_SOC" --sdk-log "$AGORA_WORKSPACE/sdk.log"
+```
+
+The log is saved with owner-only permissions and may contain device-specific
+diagnostic information. Keep it private; report the concise terminal error first.
 
 ## Validation
 

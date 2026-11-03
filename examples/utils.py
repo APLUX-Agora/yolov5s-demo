@@ -136,7 +136,6 @@ def draw_detect_res(image: np.ndarray, detections: Iterable[Sequence[float]]) ->
         p1 = int(round(x1)), int(round(y1))
         p2 = int(round(x2)), int(round(y2))
         label = COCO_CLASSES[class_id] if class_id < len(COCO_CLASSES) else str(class_id)
-        print(i, [p1[0], p1[1], p2[0], p2[1]], float(score), label)
         cv2.rectangle(result, p1, p2, color, thickness=2)
         cv2.putText(result, label, (p1[0], max(0, p1[1] - 6)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
     return cv2.addWeighted(overlay, 0.3, result, 0.7, 0)

@@ -84,15 +84,7 @@ class Yolov5s:
             if result != 0:
                 raise RuntimeError("interpreter invoke failed")
 
-        print("====================================")
-        print(
-            f"QNN invoke {invoke_nums} times:\n"
-            f" --mean_invoke_time is {sum(invoke_time) / invoke_nums}\n"
-            f" --max_invoke_time is {max(invoke_time)}\n"
-            f" --min_invoke_time is {min(invoke_time)}\n"
-            f" --var_invoketime is {np.var(invoke_time)}"
-        )
-        print("====================================")
+        self.inference_ms = sum(invoke_time) / invoke_nums
 
         output = self.interpreter.get_output_tensor(0).reshape(*self.output_shape)
         return detect_postprocess(
