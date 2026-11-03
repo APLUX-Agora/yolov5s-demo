@@ -55,10 +55,15 @@ class Yolov5s:
             raise RuntimeError("Interpreter load model failed")
         self.interpreter = interpreter
 
-    def __del__(self):
+    def close(self):
         interpreter = getattr(self, "interpreter", None)
         if interpreter is not None:
-            interpreter.destory()
+            self.interpreter = None
+            destroy = getattr(interpreter, "destroy", None) or interpreter.destory
+            destroy()
+
+    def __del__(self):
+        self.close()
 
     def __call__(
         self,

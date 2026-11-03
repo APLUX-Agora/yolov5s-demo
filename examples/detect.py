@@ -35,9 +35,7 @@ def main():
         print(f'Detected {len(detections)} objects. Saved {args.output}')
         print('COMPLETED')
     finally:
-        if model.interpreter is not None:
-            model.interpreter.destory()
-            model.interpreter = None
+        model.close()
 
 
 if __name__ == '__main__':
