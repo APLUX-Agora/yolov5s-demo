@@ -15,11 +15,16 @@ is preserved. Model binaries are hosted separately on Hugging Face.
 | --- | --- | --- |
 | QCS6490 | 2.36 | W8A8 (INT8), W8A16 |
 | QCS8550 | 2.48 | FP16, W8A8 (INT8), W8A16 |
+| QCS8625 | 2.36 | FP16, W8A16 |
+| IQ8 | 2.36 | FP16, W8A16 |
+| IQ9 | 2.36 | FP16, W8A16 |
 
-This copied resource package does not contain QCS8625 or IQ9 binaries, even though
-ModelFarm publishes performance records for those platforms. Use the backend
-matching the selected model file. This copy has not yet been validated on Agora's
-cloud devices; ModelFarm performance records are not a new runtime qualification.
+IQ8, IQ9 and QCS8625 resources are copied from APLUX-ModelFarm-IQ9/YOLOv5s.
+The original filenames are retained (IQ8 uses `qcs8275`, IQ9 uses `qcs9100`).
+`models/IQ9/W8A8_bak/` is retained as an upstream backup, not a qualified INT8
+release. Use the backend matching the selected model file; QCS8550 uses QNN 2.48
+and the other supplied packages use QNN 2.36. No new Agora board qualification
+has been performed; ModelFarm performance records may use other backend versions.
 
 ## Get the code
 
@@ -55,7 +60,7 @@ The repository is public and does not require a Hugging Face login.
 hf download APLUX-Agora/YOLOv5s --include "models/QCS8550/*" --local-dir ./resources
 ```
 
-For QCS6490, replace `QCS8550` with `QCS6490`. Keep the `models/<SoC>/<precision>/`
+For another device, replace `QCS8550` with `QCS6490`, `QCS8625`, `IQ8` or `IQ9`. Keep the `models/<SoC>/<precision>/`
 layout inside `resources`; the source binary filenames are unchanged.
 
 ## Run a test

@@ -15,3 +15,9 @@ AidLite and Qualcomm QNN SDK binaries are not included in this repository.
 Agora separates Python inference code (GitHub) from model binaries (Hugging Face).
 Model binaries are copied without modification. Python inference behavior is
 preserved; only the default model path is updated to match the published layout.
+
+Additional IQ8, IQ9 and QCS8625 model resources are copied from
+https://huggingface.co/APLUX-ModelFarm-IQ9/YOLOv5s at revision
+193087ec488613f7d1e3d9357e994b999a194a5e. The Python inference implementation
+is identical to the first source package. The upstream W8A8_bak directory is
+retained as a backup, without a new qualification claim.
