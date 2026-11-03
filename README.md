@@ -68,6 +68,10 @@ python examples/detect.py --models "$AGORA_WORKSPACE/resources/targets/$AGORA_SO
 
 Expected: Inference timing, the detected object count, `COMPLETED`, and an annotated `result.jpg`. Use `--image` for another image or `--precision INT8` / `--precision W8A16` when the target supplies it.
 
+## Validation
+
+QCS8550 / Ubuntu 22.04: FP16, INT8 and W8A16 tested with AidLite 2.5.0.284 and the QNN 2.48 backend. Other hardware combinations require validation.
+
 ## License
 
 AGPL-3.0. See LICENSE and NOTICE.md. AidLite and QNN SDKs are installed separately.
