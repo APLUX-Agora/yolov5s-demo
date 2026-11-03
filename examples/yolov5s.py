@@ -48,6 +48,7 @@ class Yolov5s:
         interpreter = aidlite.InterpreterBuilder.build_interpretper_from_model_and_config(model, config)
         if interpreter is None:
             raise RuntimeError("Build interpreter failed")
+        self.interpreter = interpreter
         if interpreter.init() != 0:
             raise RuntimeError("Interpreter init failed")
         if interpreter.load_model() != 0:

@@ -1,86 +1,73 @@
-# YOLOv5s on Qualcomm devices
+# YOLOv5s
 
-Python object-detection example using the AidLite SDK and precompiled QNN models.
-This is an Agora copy of the ModelFarm YOLOv5s package; the inference implementation
-is preserved. Model binaries are hosted separately on Hugging Face.
+Minimal on-device inference example. [Model resources](https://huggingface.co/APLUX-Agora/YOLOv5s) are hosted separately on Hugging Face.
 
-- Code: https://github.com/APLUX-Agora/yolov5s-demo
-- Models: https://huggingface.co/APLUX-Agora/YOLOv5s
-- ModelFarm information and performance: https://aiot.aidlux.com/en/models/detail/16
-- Input: 640 x 640 RGB; output: [1, 25200, 85]; COCO 80 classes.
+Targets: QCS6490, QCS8550, QCS8625, IQ8, IQ9. The default is FP16, except QCS6490 uses INT8. QCS8550 requires the QNN 2.48 backend; the other supplied packages require QNN 2.36 (`aidlite-qnn236`).
 
-## Available model files
+## 1. Check the environment
 
-| SoC | QNN backend | Precisions |
-| --- | --- | --- |
-| QCS6490 | 2.36 | W8A8 (INT8), W8A16 |
-| QCS8550 | 2.48 | FP16, W8A8 (INT8), W8A16 |
-| QCS8625 | 2.36 | FP16, W8A16 |
-| IQ8 | 2.36 | FP16, W8A16 |
-| IQ9 | 2.36 | FP16, W8A16 |
-
-IQ8, IQ9 and QCS8625 resources are copied from APLUX-ModelFarm-IQ9/YOLOv5s.
-The original filenames are retained (IQ8 uses `qcs8275`, IQ9 uses `qcs9100`).
-`models/IQ9/W8A8_bak/` is retained as an upstream backup, not a qualified INT8
-release. Use the backend matching the selected model file; QCS8550 uses QNN 2.48
-and the other supplied packages use QNN 2.36. No new Agora board qualification
-has been performed; ModelFarm performance records may use other backend versions.
-
-## Get the code
+Download `agora.env.example` as `agora.env`, edit its two values if needed, then load it.
+Agora's workspace provides the same file with your selections filled in.
 
 ```bash
-git clone https://github.com/APLUX-Agora/yolov5s-demo.git
-cd yolov5s-demo
+curl -fL https://raw.githubusercontent.com/APLUX-Agora/yolov5s-demo/main/agora.env.example -o agora.env
+source ./agora.env
+mkdir -p "$AGORA_WORKSPACE"
+curl -fL https://raw.githubusercontent.com/APLUX-Agora/yolov5s-demo/main/tools/check-environment.py \
+  -o "$AGORA_WORKSPACE/check-environment.py"
+python3 "$AGORA_WORKSPACE/check-environment.py" --soc "$AGORA_SOC" --ubuntu 22.04
 ```
 
-## Prepare the environment
+QCS6490/QCS8550/QCS8625 use Ubuntu 22.04 in this demo; IQ8/IQ9 use Ubuntu 24.04.
+`CHECKED` means the expected value matches. Fix `FAILED` before proceeding.
+For `NEEDS_SETUP`, install the dependencies below and rerun the check.
 
-On an AidLux-supported Ubuntu device, install the SDK and the selected QNN backend.
-For the QCS8550 example below:
+## 2. Get the code
 
 ```bash
-sudo aid-pkg update
+git clone https://github.com/APLUX-Agora/yolov5s-demo.git "$AGORA_WORKSPACE/code"
+cd "$AGORA_WORKSPACE/code"
+```
+
+Already cloned? Skip this step, or run `git pull --ff-only` to update.
+
+## 3. Set up dependencies
+
+QCS8550 example; installed system packages can be skipped.
+
+```bash
 sudo aid-pkg install aidlite-sdk
 sudo aid-pkg install aidlite-qnn248
+sudo apt-get update
+sudo apt-get install -y git python3-venv
+cd "$AGORA_WORKSPACE/code"
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -c "import aidlite; print(aidlite.get_py_library_version())"
+pip install -r requirements.txt
 ```
 
-QCS6490 models require `aidlite-qnn236` instead. SDK availability depends on your
-board's package sources. AidLite setup: https://rhinopi.docs.aidlux.com/software/ai-sdk/aidlite_guide
+Keep this terminal open. In a new terminal, source your `agora.env` and activate
+`$AGORA_WORKSPACE/code/.venv` before continuing.
 
-## Get model resources
-
-Download only the selected SoC directory with the official Hugging Face CLI.
-The repository is public and does not require a Hugging Face login.
+## 4. Get model resources
 
 ```bash
-hf download APLUX-Agora/YOLOv5s --include "models/QCS8550/*" --local-dir ./resources
+hf download APLUX-Agora/YOLOv5s \
+  --include "targets/$AGORA_SOC/*" --local-dir "$AGORA_WORKSPACE/resources"
 ```
 
-For another device, replace `QCS8550` with `QCS6490`, `QCS8625`, `IQ8` or `IQ9`. Keep the `models/<SoC>/<precision>/`
-layout inside `resources`; the source binary filenames are unchanged.
+Public download, no login required. All files for the selected SoC stay together.
 
-## Run a test
-
-From the repository root with the virtual environment active:
+## 5. Run a test
 
 ```bash
-python code/python/run_test.py \
-  --target_model ./resources/models/QCS8550/FP16/yolov5s_qcs8550_fp16.qnn248.ctx.bin \
-  --imgs ./code/python/bus.jpg \
-  --invoke_nums 10 \
-  --save_path ./result.jpg
+cd "$AGORA_WORKSPACE/code"
+python examples/detect.py --models "$AGORA_WORKSPACE/resources/targets/$AGORA_SOC" \
+  --output "$AGORA_WORKSPACE/result.jpg"
 ```
 
-Expected output: inference timing, the detected object count and an annotated
-`result.jpg`. Timing and detection counts depend on the device and selected model.
-For another precision or SoC, pass the corresponding model file explicitly.
+Expected: Inference timing, the detected object count, `COMPLETED`, and an annotated `result.jpg`. Use `--image` for another image or `--precision INT8` / `--precision W8A16` when the target supplies it.
 
-## License and provenance
+## License
 
-AGPL-3.0. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md). AidLite and QNN SDKs
-are separate dependencies with their own terms. The copied upstream package
-version is `2026.09.28-v1.0.0`.
+AGPL-3.0. See LICENSE and NOTICE.md. AidLite and QNN SDKs are installed separately.
